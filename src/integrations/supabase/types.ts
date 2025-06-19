@@ -9,13 +9,102 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      country_config: {
+        Row: {
+          country_code: string
+          created_at: string | null
+          currency_code: string
+          currency_symbol: string
+          daily_search_limit: number | null
+          id: string
+          platforms: Json
+        }
+        Insert: {
+          country_code: string
+          created_at?: string | null
+          currency_code: string
+          currency_symbol: string
+          daily_search_limit?: number | null
+          id?: string
+          platforms: Json
+        }
+        Update: {
+          country_code?: string
+          created_at?: string | null
+          currency_code?: string
+          currency_symbol?: string
+          daily_search_limit?: number | null
+          id?: string
+          platforms?: Json
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          country: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          last_reset: string | null
+          plan: string | null
+          search_count_today: number | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string | null
+          email?: string | null
+          id: string
+          last_reset?: string | null
+          plan?: string | null
+          search_count_today?: number | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          last_reset?: string | null
+          plan?: string | null
+          search_count_today?: number | null
+        }
+        Relationships: []
+      }
+      search_history: {
+        Row: {
+          filters: Json | null
+          id: string
+          query: string
+          results_count: number | null
+          timestamp: string | null
+          user_id: string
+        }
+        Insert: {
+          filters?: Json | null
+          id?: string
+          query: string
+          results_count?: number | null
+          timestamp?: string | null
+          user_id: string
+        }
+        Update: {
+          filters?: Json | null
+          id?: string
+          query?: string
+          results_count?: number | null
+          timestamp?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      reset_daily_search_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
