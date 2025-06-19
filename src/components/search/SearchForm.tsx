@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +21,7 @@ const SearchForm = ({ onSearch, loading, availablePlatforms }: SearchFormProps) 
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<'price' | 'rating' | 'popularity'>('relevance' as any);
+  const [sortBy, setSortBy] = useState<'price' | 'rating' | 'popularity' | 'relevance'>('relevance');
   const [freeShipping, setFreeShipping] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -51,7 +50,7 @@ const SearchForm = ({ onSearch, loading, availablePlatforms }: SearchFormProps) 
     setMinPrice("");
     setMaxPrice("");
     setSelectedPlatforms([]);
-    setSortBy('relevance' as any);
+    setSortBy('relevance');
     setFreeShipping(false);
   };
 
@@ -147,7 +146,7 @@ const SearchForm = ({ onSearch, loading, availablePlatforms }: SearchFormProps) 
                 {/* Sort By */}
                 <div className="space-y-3">
                   <Label className="text-sm font-medium">Sort By</Label>
-                  <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                  <Select value={sortBy} onValueChange={(value: 'price' | 'rating' | 'popularity' | 'relevance') => setSortBy(value)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
