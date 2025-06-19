@@ -117,12 +117,15 @@ const SearchPage = () => {
           .update({ search_count_today: userProfile.search_count_today + 1 })
           .eq('id', user.id);
 
+        // Convert filters to JSON-compatible format
+        const filtersJson = filters ? JSON.parse(JSON.stringify(filters)) : null;
+
         await supabase
           .from('search_history')
           .insert({
             user_id: user.id,
             query,
-            filters,
+            filters: filtersJson,
             results_count: mockResults.length
           });
 
