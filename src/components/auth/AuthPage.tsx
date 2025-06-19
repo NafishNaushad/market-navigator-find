@@ -17,68 +17,158 @@ const AuthPage = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
+    
+    if (!email || !password) {
       toast({
-        title: "Error signing in",
-        description: error.message,
+        title: "Please fill in all fields",
         variant: "destructive",
       });
+      return;
     }
 
-    setLoading(false);
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (error) {
+        console.log("Sign in error:", error);
+        toast({
+          title: "Error signing in",
+          description: error.message === "Invalid login credentials" 
+            ? "Invalid email or password. Please check your credentials and try again."
+            : error.message,
+          variant: "destructive",
+        });
+      } else if (data.user) {
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully signed in.",
+        });
+      }
+    } catch (error) {
+      console.log("Unexpected error:", error);
+      toast({
+        title: "An unexpected error occurred",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
+    
+    if (!email || !password) {
       toast({
-        title: "Error signing up",
-        description: error.message,
+        title: "Please fill in all fields",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Check your email",
-        description: "We've sent you a confirmation link.",
-      });
+      return;
     }
 
-    setLoading(false);
+    if (password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        }
+      });
+
+      if (error) {
+        console.log("Sign up error:", error);
+        if (error.message.includes("User already registered")) {
+          toast({
+            title: "Account already exists",
+            description: "This email is already registered. Please sign in instead.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error signing up",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+      } else if (data.user) {
+        if (data.user.email_confirmed_at) {
+          toast({
+            title: "Account created successfully!",
+            description: "You can now sign in to your account.",
+          });
+        } else {
+          toast({
+            title: "Check your email",
+            description: "We've sent you a confirmation link. Please check your email and click the link to verify your account.",
+          });
+        }
+      }
+    } catch (error) {
+      console.log("Unexpected error:", error);
+      toast({
+        title: "An unexpected error occurred",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin,
-      },
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
 
-    if (error) {
+      if (error) {
+        console.log("Google sign in error:", error);
+        if (error.message.includes("provider is not enabled")) {
+          toast({
+            title: "Google sign-in not available",
+            description: "Google authentication is not configured. Please use email and password to sign in.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error signing in with Google",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+      }
+    } catch (error) {
+      console.log("Unexpected error:", error);
       toast({
-        title: "Error signing in",
-        description: error.message,
+        title: "An unexpected error occurred",
+        description: "Please try again later.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -114,9 +204,11 @@ const AuthPage = () => {
                     <Input
                       id="signin-email"
                       type="email"
+                      placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      disabled={loading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -124,9 +216,11 @@ const AuthPage = () => {
                     <Input
                       id="signin-password"
                       type="password"
+                      placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      disabled={loading}
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
@@ -143,9 +237,11 @@ const AuthPage = () => {
                     <Input
                       id="signup-email"
                       type="email"
+                      placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      disabled={loading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -153,10 +249,12 @@ const AuthPage = () => {
                     <Input
                       id="signup-password"
                       type="password"
+                      placeholder="Create a password (min 6 characters)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={6}
+                      disabled={loading}
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
@@ -189,6 +287,9 @@ const AuthPage = () => {
             <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
               <p>Get 10 free searches per day</p>
               <p className="mt-1 text-xs">All data sourced from public sites. We do not store or process orders.</p>
+              <p className="mt-2 text-xs text-blue-600">
+                For testing: You can create an account or try the demo credentials above
+              </p>
             </div>
           </CardContent>
         </Card>

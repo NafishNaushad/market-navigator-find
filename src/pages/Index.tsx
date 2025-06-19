@@ -17,16 +17,29 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Check initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.log("Session error:", error);
+        } else {
+          setUser(session?.user ?? null);
+        }
+      } catch (error) {
+        console.log("Error getting session:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getInitialSession();
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email);
       setUser(session?.user ?? null);
       
       if (event === 'SIGNED_IN') {
@@ -38,6 +51,9 @@ const Index = () => {
         toast({
           title: "Signed out successfully",
         });
+        setActiveTab("search"); // Reset to default tab
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log("Token refreshed successfully");
       }
     });
 
