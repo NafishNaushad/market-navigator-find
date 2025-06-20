@@ -110,7 +110,7 @@ const SearchPage = () => {
           .insert({
             user_id: user.id,
             query,
-            filters: filters,
+            filters: filters as any, // Cast to any to satisfy Json type
             results_count: enhancedResults.length
           });
       }
