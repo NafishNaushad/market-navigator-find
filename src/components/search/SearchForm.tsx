@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { SearchFilters } from "./SearchPage";
 import SearchInput from "./SearchInput";
-import SearchFilters from "./SearchFilters";
+import SearchFiltersComponent from "./SearchFilters";
 
 interface SearchFormProps {
   onSearch: (query: string, filters: SearchFilters) => void;
@@ -66,7 +66,7 @@ const SearchForm = ({ onSearch, loading, availablePlatforms }: SearchFormProps) 
             onSubmit={handleSubmit}
             loading={loading}
           />
-          <SearchFilters
+          <SearchFiltersComponent
             showFilters={false}
             minPrice={minPrice}
             maxPrice={maxPrice}
@@ -86,7 +86,7 @@ const SearchForm = ({ onSearch, loading, availablePlatforms }: SearchFormProps) 
         </div>
       </div>
 
-      <SearchFilters
+      <SearchFiltersComponent
         showFilters={showFilters}
         minPrice={minPrice}
         maxPrice={maxPrice}

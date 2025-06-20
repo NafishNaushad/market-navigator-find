@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, ShoppingCart, Star, Truck, Clock, Compare, Heart, TrendingUp } from "lucide-react";
+import { ExternalLink, ShoppingCart, Star, Truck, Clock, GitCompare, Heart, TrendingUp } from "lucide-react";
 import { Product } from "./SearchPage";
 import { useState } from "react";
 
@@ -86,7 +86,7 @@ const EnhancedSearchResults = ({ products, searchQuery }: EnhancedSearchResultsP
           </div>
           {compareList.length > 0 && (
             <Button className="bg-purple-600 hover:bg-purple-700">
-              <Compare className="h-4 w-4 mr-2" />
+              <GitCompare className="h-4 w-4 mr-2" />
               Compare ({compareList.length})
             </Button>
           )}
@@ -125,7 +125,7 @@ const EnhancedSearchResults = ({ products, searchQuery }: EnhancedSearchResultsP
                   className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
                   onClick={() => toggleCompare(product.id)}
                 >
-                  <Compare className={`h-4 w-4 ${compareList.includes(product.id) ? 'text-purple-600' : 'text-gray-600'}`} />
+                  <GitCompare className={`h-4 w-4 ${compareList.includes(product.id) ? 'text-purple-600' : 'text-gray-600'}`} />
                 </Button>
               </div>
 
