@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { SearchFilters } from "./SearchPage";
 import SearchInput from "./SearchInput";
-import SearchFilters as SearchFiltersComponent from "./SearchFilters";
+import SearchFiltersComponent from "./SearchFilters";
 
 interface SearchFormProps {
   onSearch: (query: string, filters: SearchFilters) => void;
