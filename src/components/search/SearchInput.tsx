@@ -16,7 +16,7 @@ const SearchInput = ({ query, onQueryChange, onSubmit, loading }: SearchInputPro
   ];
 
   return (
-    <form onSubmit={onSubmit} className="flex-1">
+    <div className="flex-1">
       <div className="flex gap-3">
         <div className="flex-1 relative group">
           <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
@@ -75,7 +75,7 @@ const SearchInput = ({ query, onQueryChange, onSubmit, loading }: SearchInputPro
           ))}
         </div>
       )}
-    </form>
+    </div>
   );
 };
 
