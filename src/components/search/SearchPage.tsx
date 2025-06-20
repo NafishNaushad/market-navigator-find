@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SearchForm from "./SearchForm";
-import SearchResults from "./SearchResults";
+import EnhancedSearchResults from "./EnhancedSearchResults";
 import SearchOptimization from "./SearchOptimization";
 import UserStats from "./UserStats";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,8 +56,7 @@ const SearchPage = () => {
   };
 
   const loadCountryConfig = async () => {
-    // First detect user's country (using a mock for now)
-    const detectedCountry = 'US'; // Will implement IP detection later
+    const detectedCountry = 'US';
     
     const { data } = await supabase
       .from('country_config')
@@ -68,77 +67,93 @@ const SearchPage = () => {
     setCountryConfig(data);
   };
 
-  const generateMockProducts = (query: string, filters: SearchFilters): Product[] => {
+  const generateEnhancedMockProducts = (query: string, filters: SearchFilters): Product[] => {
     const platforms = ['Amazon', 'Flipkart', 'Meesho', 'AliExpress', 'eBay'];
     const currency = countryConfig?.currency_symbol || "$";
     
-    const baseProducts = [
+    const productVariations = [
       {
-        title: `${query} - Premium Quality`,
-        basePrice: 29.99,
+        title: `${query} - Premium Quality with Advanced Features`,
+        basePrice: 89.99,
         image: "/placeholder.svg",
-        rating: 4.5,
-        reviews: 1250,
-        shipping: "Free shipping",
+        rating: 4.7,
+        reviews: 2340,
+        shipping: "Free same-day delivery",
         availability: "In stock"
       },
       {
-        title: `${query} - Best Value Pack`,
-        basePrice: 24.99,
+        title: `${query} - Best Value Professional Grade`,
+        basePrice: 129.99,
         image: "/placeholder.svg",
-        rating: 4.2,
+        rating: 4.8,
+        reviews: 1890,
+        shipping: "Free next-day delivery",
+        availability: "In stock"
+      },
+      {
+        title: `${query} - Budget Friendly High Quality`,
+        basePrice: 45.99,
+        image: "/placeholder.svg",
+        rating: 4.3,
         reviews: 890,
         shipping: "Free shipping",
         availability: "In stock"
       },
       {
-        title: `${query} - Professional Grade`,
-        basePrice: 49.99,
+        title: `${query} - Luxury Edition with Warranty`,
+        basePrice: 199.99,
         image: "/placeholder.svg",
-        rating: 4.8,
-        reviews: 2100,
-        shipping: "$5.99 shipping",
-        availability: "In stock"
-      },
-      {
-        title: `${query} - Budget Friendly`,
-        basePrice: 15.99,
-        image: "/placeholder.svg",
-        rating: 3.9,
-        reviews: 520,
-        shipping: "Free shipping",
-        availability: "In stock"
-      },
-      {
-        title: `${query} - Luxury Edition`,
-        basePrice: 89.99,
-        image: "/placeholder.svg",
-        rating: 4.7,
-        reviews: 340,
-        shipping: "Free shipping",
+        rating: 4.9,
+        reviews: 567,
+        shipping: "Free premium delivery",
         availability: "Limited stock"
+      },
+      {
+        title: `${query} - Latest Model 2024`,
+        basePrice: 159.99,
+        image: "/placeholder.svg",
+        rating: 4.6,
+        reviews: 1234,
+        shipping: "Free 2-day shipping",
+        availability: "In stock"
+      },
+      {
+        title: `${query} - Eco-Friendly Sustainable`,
+        basePrice: 75.99,
+        image: "/placeholder.svg",
+        rating: 4.4,
+        reviews: 678,
+        shipping: "Free shipping",
+        availability: "In stock"
       }
     ];
 
-    let products = baseProducts.map((product, index) => {
-      const platform = platforms[index % platforms.length];
-      const priceVariation = Math.random() * 0.4 + 0.8; // 80% to 120% of base price
-      const finalPrice = (product.basePrice * priceVariation).toFixed(2);
+    let products = [];
+    
+    // Generate multiple products per platform for better comparison
+    for (let i = 0; i < productVariations.length; i++) {
+      for (let j = 0; j < platforms.length; j++) {
+        const variation = productVariations[i];
+        const platform = platforms[j];
+        const priceVariation = Math.random() * 0.6 + 0.7; // 70% to 130% of base price
+        const finalPrice = (variation.basePrice * priceVariation).toFixed(2);
+        const ratingVariation = variation.rating + (Math.random() * 0.4 - 0.2); // ±0.2 rating variation
 
-      return {
-        id: `${index}-${Date.now()}`,
-        title: product.title,
-        price: finalPrice,
-        image: product.image,
-        platform,
-        link: `https://${platform.toLowerCase()}.com`,
-        currency,
-        rating: product.rating,
-        reviews: product.reviews,
-        shipping: product.shipping,
-        availability: product.availability
-      };
-    });
+        products.push({
+          id: `${i}-${j}-${Date.now()}`,
+          title: variation.title,
+          price: finalPrice,
+          image: variation.image,
+          platform,
+          link: `https://${platform.toLowerCase()}.com`,
+          currency,
+          rating: Math.max(3.0, Math.min(5.0, Number(ratingVariation.toFixed(1)))),
+          reviews: variation.reviews + Math.floor(Math.random() * 500),
+          shipping: variation.shipping,
+          availability: variation.availability
+        });
+      }
+    }
 
     // Apply filters
     if (filters.minPrice || filters.maxPrice) {
@@ -178,13 +193,13 @@ const SearchPage = () => {
       });
     }
 
-    return products;
+    // Limit to 20 products for better performance
+    return products.slice(0, 20);
   };
 
   const handleSearch = async (query: string, filters: SearchFilters) => {
     if (!userProfile) return;
 
-    // Check search limit
     if (userProfile.search_count_today >= (countryConfig?.daily_search_limit || 10)) {
       toast({
         title: "Daily limit reached",
@@ -198,12 +213,9 @@ const SearchPage = () => {
     setLastQuery(query);
 
     try {
-      // Generate enhanced mock results
-      const mockResults = generateMockProducts(query, filters);
+      const enhancedResults = generateEnhancedMockProducts(query, filters);
+      setProducts(enhancedResults);
 
-      setProducts(mockResults);
-
-      // Update search count and save to history
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase
@@ -211,7 +223,6 @@ const SearchPage = () => {
           .update({ search_count_today: userProfile.search_count_today + 1 })
           .eq('id', user.id);
 
-        // Convert filters to JSON-compatible format
         const filtersJson = filters ? JSON.parse(JSON.stringify(filters)) : null;
 
         await supabase
@@ -220,16 +231,15 @@ const SearchPage = () => {
             user_id: user.id,
             query,
             filters: filtersJson,
-            results_count: mockResults.length
+            results_count: enhancedResults.length
           });
 
-        // Refresh user profile
         loadUserProfile();
       }
 
       toast({
         title: "Search completed!",
-        description: `Found ${mockResults.length} products across platforms.`,
+        description: `Found ${enhancedResults.length} products across ${countryConfig?.platforms?.length || 5} platforms.`,
       });
 
     } catch (error) {
@@ -248,7 +258,7 @@ const SearchPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-7xl mx-auto">
       <UserStats 
         searchCount={userProfile?.search_count_today || 0}
         searchLimit={countryConfig?.daily_search_limit || 10}
@@ -256,21 +266,14 @@ const SearchPage = () => {
         country={userProfile?.country || "US"}
       />
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Search Products</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SearchForm 
-            onSearch={handleSearch} 
-            loading={loading}
-            availablePlatforms={countryConfig?.platforms || ['Amazon', 'Flipkart', 'Meesho', 'AliExpress']}
-          />
-        </CardContent>
-      </Card>
+      <SearchForm 
+        onSearch={handleSearch} 
+        loading={loading}
+        availablePlatforms={countryConfig?.platforms || ['Amazon', 'Flipkart', 'Meesho', 'AliExpress', 'eBay']}
+      />
 
       {products.length > 0 ? (
-        <SearchResults products={products} />
+        <EnhancedSearchResults products={products} searchQuery={lastQuery} />
       ) : !loading && (
         <SearchOptimization onSuggestionClick={handleSuggestionClick} />
       )}
