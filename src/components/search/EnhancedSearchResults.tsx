@@ -1,24 +1,31 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, ShoppingCart, Star, Truck, Clock, GitCompare, Heart, TrendingUp, Filter } from "lucide-react";
+import { ExternalLink, ShoppingCart, Star, Truck, Clock, GitCompare, Heart, TrendingUp } from "lucide-react";
 import { Product } from "./SearchPage";
 import { useState } from "react";
 import ProductDetailModal from "./ProductDetailModal";
+import AdvancedFilters from "./AdvancedFilters";
 
 interface EnhancedSearchResultsProps {
   products: Product[];
   searchQuery: string;
+  availablePlatforms: string[];
+  availableBrands: string[];
 }
 
-const EnhancedSearchResults = ({ products, searchQuery }: EnhancedSearchResultsProps) => {
+const EnhancedSearchResults = ({ 
+  products, 
+  searchQuery, 
+  availablePlatforms, 
+  availableBrands 
+}: EnhancedSearchResultsProps) => {
   const [compareList, setCompareList] = useState<string[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<string>('relevance');
-  const [filterPlatform, setFilterPlatform] = useState<string>('all');
+  const [filters, setFilters] = useState<any>({});
+  const [showFilters, setShowFilters] = useState(false);
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
@@ -48,6 +55,8 @@ const EnhancedSearchResults = ({ products, searchQuery }: EnhancedSearchResultsP
       'Meesho': 'bg-gradient-to-r from-pink-500 to-pink-700 text-white',
       'AliExpress': 'bg-gradient-to-r from-red-500 to-red-700 text-white',
       'eBay': 'bg-gradient-to-r from-yellow-500 to-yellow-700 text-white',
+      'Walmart': 'bg-gradient-to-r from-blue-400 to-blue-600 text-white',
+      'Best Buy': 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white',
     };
     return colors[platform as keyof typeof colors] || 'bg-gradient-to-r from-gray-500 to-gray-700 text-white';
   };
@@ -70,38 +79,72 @@ const EnhancedSearchResults = ({ products, searchQuery }: EnhancedSearchResultsP
     return stars;
   };
 
-  const getFilteredAndSortedProducts = () => {
+  // Apply client-side filtering
+  const getFilteredProducts = () => {
     let filtered = products;
 
-    // Filter by platform
-    if (filterPlatform !== 'all') {
-      filtered = filtered.filter(product => product.platform === filterPlatform);
+    if (filters.minPrice || filters.maxPrice) {
+      filtered = filtered.filter(product => {
+        const price = parseFloat(product.price);
+        if (filters.minPrice && price < filters.minPrice) return false;
+        if (filters.maxPrice && price > filters.maxPrice) return false;
+        return true;
+      });
     }
 
-    // Sort products
-    return filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'price-low':
-          return parseFloat(a.price) - parseFloat(b.price);
-        case 'price-high':
-          return parseFloat(b.price) - parseFloat(a.price);
-        case 'rating':
-          return (b.rating || 0) - (a.rating || 0);
-        case 'popularity':
-          return (b.reviews || 0) - (a.reviews || 0);
-        default:
-          return 0;
-      }
-    });
+    if (filters.platforms && filters.platforms.length > 0) {
+      filtered = filtered.filter(product => 
+        filters.platforms.includes(product.platform)
+      );
+    }
+
+    if (filters.brands && filters.brands.length > 0) {
+      filtered = filtered.filter(product => 
+        filters.brands.includes(product.brand)
+      );
+    }
+
+    if (filters.minRating) {
+      filtered = filtered.filter(product => 
+        (product.rating || 0) >= filters.minRating
+      );
+    }
+
+    if (filters.freeShipping) {
+      filtered = filtered.filter(product => 
+        product.shipping?.toLowerCase().includes('free')
+      );
+    }
+
+    // Apply sorting
+    if (filters.sortBy && filters.sortBy !== 'relevance') {
+      filtered.sort((a, b) => {
+        switch (filters.sortBy) {
+          case 'price-low':
+            return parseFloat(a.price) - parseFloat(b.price);
+          case 'price-high':
+            return parseFloat(b.price) - parseFloat(a.price);
+          case 'rating':
+            return (b.rating || 0) - (a.rating || 0);
+          case 'popularity':
+            return (b.reviews || 0) - (a.reviews || 0);
+          case 'delivery':
+            return (a.deliveryTime || 7) - (b.deliveryTime || 7);
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return filtered;
   };
 
-  const filteredProducts = getFilteredAndSortedProducts();
-  const platforms = [...new Set(products.map(p => p.platform))];
+  const filteredProducts = getFilteredProducts();
 
   return (
     <>
       <div className="space-y-6">
-        {/* Header with filters and compare */}
+        {/* Header with results info and compare */}
         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 p-6 rounded-2xl">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-4">
             <div>
@@ -110,45 +153,28 @@ const EnhancedSearchResults = ({ products, searchQuery }: EnhancedSearchResultsP
                 Results for "{searchQuery}"
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Found {filteredProducts.length} products across {platforms.length} platforms
+                Found {filteredProducts.length} products across {availablePlatforms.length} platforms
               </p>
             </div>
             
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Platform Filter */}
-              <select 
-                value={filterPlatform} 
-                onChange={(e) => setFilterPlatform(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm"
-              >
-                <option value="all">All Platforms</option>
-                {platforms.map(platform => (
-                  <option key={platform} value={platform}>{platform}</option>
-                ))}
-              </select>
-
-              {/* Sort Options */}
-              <select 
-                value={sortBy} 
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm"
-              >
-                <option value="relevance">Sort by Relevance</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="rating">Highest Rated</option>
-                <option value="popularity">Most Popular</option>
-              </select>
-
-              {compareList.length > 0 && (
-                <Button className="bg-purple-600 hover:bg-purple-700">
-                  <GitCompare className="h-4 w-4 mr-2" />
-                  Compare ({compareList.length})
-                </Button>
-              )}
-            </div>
+            {compareList.length > 0 && (
+              <Button className="bg-purple-600 hover:bg-purple-700">
+                <GitCompare className="h-4 w-4 mr-2" />
+                Compare ({compareList.length})
+              </Button>
+            )}
           </div>
         </div>
+
+        {/* Advanced Filters */}
+        <AdvancedFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          availablePlatforms={availablePlatforms}
+          availableBrands={availableBrands}
+          isOpen={showFilters}
+          onToggle={() => setShowFilters(!showFilters)}
+        />
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
