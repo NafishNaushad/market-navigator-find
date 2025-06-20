@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SearchForm from "./SearchForm";
@@ -20,6 +19,12 @@ export interface Product {
   reviews?: number;
   shipping?: string;
   availability?: string;
+  originalPrice?: string;
+  discount?: number;
+  seller?: string;
+  description?: string;
+  features?: string[];
+  specifications?: Record<string, string>;
 }
 
 export interface SearchFilters {
@@ -67,90 +72,152 @@ const SearchPage = () => {
     setCountryConfig(data);
   };
 
-  const generateEnhancedMockProducts = (query: string, filters: SearchFilters): Product[] => {
+  const generateRealisticProducts = (query: string, filters: SearchFilters): Product[] => {
     const platforms = ['Amazon', 'Flipkart', 'Meesho', 'AliExpress', 'eBay'];
     const currency = countryConfig?.currency_symbol || "$";
     
-    const productVariations = [
-      {
-        title: `${query} - Premium Quality with Advanced Features`,
-        basePrice: 89.99,
-        image: "/placeholder.svg",
-        rating: 4.7,
-        reviews: 2340,
-        shipping: "Free same-day delivery",
-        availability: "In stock"
-      },
-      {
-        title: `${query} - Best Value Professional Grade`,
-        basePrice: 129.99,
-        image: "/placeholder.svg",
-        rating: 4.8,
-        reviews: 1890,
-        shipping: "Free next-day delivery",
-        availability: "In stock"
-      },
-      {
-        title: `${query} - Budget Friendly High Quality`,
-        basePrice: 45.99,
-        image: "/placeholder.svg",
-        rating: 4.3,
-        reviews: 890,
-        shipping: "Free shipping",
-        availability: "In stock"
-      },
-      {
-        title: `${query} - Luxury Edition with Warranty`,
-        basePrice: 199.99,
-        image: "/placeholder.svg",
-        rating: 4.9,
-        reviews: 567,
-        shipping: "Free premium delivery",
-        availability: "Limited stock"
-      },
-      {
-        title: `${query} - Latest Model 2024`,
-        basePrice: 159.99,
-        image: "/placeholder.svg",
-        rating: 4.6,
-        reviews: 1234,
-        shipping: "Free 2-day shipping",
-        availability: "In stock"
-      },
-      {
-        title: `${query} - Eco-Friendly Sustainable`,
-        basePrice: 75.99,
-        image: "/placeholder.svg",
-        rating: 4.4,
-        reviews: 678,
-        shipping: "Free shipping",
-        availability: "In stock"
-      }
-    ];
+    // More realistic product variations based on the search query
+    const getProductVariations = (searchTerm: string) => {
+      const baseProducts = [
+        {
+          title: `${searchTerm} - Premium Wireless Bluetooth with Noise Cancellation`,
+          basePrice: 299.99,
+          image: "/placeholder.svg",
+          rating: 4.7,
+          reviews: 12450,
+          shipping: "Free same-day delivery",
+          availability: "In stock",
+          discount: 25,
+          seller: "TechHub Electronics",
+          description: `High-quality ${searchTerm} with advanced features and premium build quality. Perfect for music lovers and professionals.`,
+          features: ["Wireless Bluetooth 5.0", "30-hour battery life", "Active noise cancellation", "Premium leather finish"],
+          specifications: {
+            "Battery Life": "30 hours",
+            "Connectivity": "Bluetooth 5.0, 3.5mm jack",
+            "Weight": "250g",
+            "Warranty": "2 years"
+          }
+        },
+        {
+          title: `${searchTerm} - Professional Grade Studio Quality`,
+          basePrice: 459.99,
+          image: "/placeholder.svg",
+          rating: 4.9,
+          reviews: 8930,
+          shipping: "Free 2-day shipping",
+          availability: "In stock",
+          discount: 15,
+          seller: "AudioPro Official Store",
+          description: `Professional ${searchTerm} designed for studio use and audiophiles. Crystal clear sound quality.`,
+          features: ["Studio-grade drivers", "Detachable cable", "Foldable design", "Carrying case included"],
+          specifications: {
+            "Frequency Response": "20Hz - 40kHz",
+            "Impedance": "32 Ohms",
+            "Driver Size": "50mm",
+            "Warranty": "3 years"
+          }
+        },
+        {
+          title: `${searchTerm} - Budget Friendly High Performance`,
+          basePrice: 79.99,
+          image: "/placeholder.svg",
+          rating: 4.3,
+          reviews: 15670,
+          shipping: "Free shipping",
+          availability: "In stock",
+          discount: 30,
+          seller: "ValueTech",
+          description: `Affordable ${searchTerm} without compromising on quality. Great value for money.`,
+          features: ["Clear audio", "Comfortable padding", "Adjustable headband", "1-year warranty"],
+          specifications: {
+            "Driver Size": "40mm",
+            "Connectivity": "3.5mm jack",
+            "Weight": "180g",
+            "Warranty": "1 year"
+          }
+        },
+        {
+          title: `${searchTerm} - Gaming Edition RGB LED`,
+          basePrice: 189.99,
+          image: "/placeholder.svg",
+          rating: 4.6,
+          reviews: 9840,
+          shipping: "Free next-day delivery",
+          availability: "In stock",
+          discount: 20,
+          seller: "GameZone Pro",
+          description: `Gaming ${searchTerm} with RGB lighting and surround sound. Perfect for gamers.`,
+          features: ["7.1 surround sound", "RGB LED lighting", "Noise-canceling mic", "Gaming software"],
+          specifications: {
+            "Surround Sound": "7.1 virtual",
+            "Microphone": "Detachable boom mic",
+            "Lighting": "RGB LED",
+            "Platform": "PC, PS5, Xbox"
+          }
+        },
+        {
+          title: `${searchTerm} - Travel Compact Foldable`,
+          basePrice: 129.99,
+          image: "/placeholder.svg",
+          rating: 4.4,
+          reviews: 6780,
+          shipping: "Free shipping",
+          availability: "Limited stock",
+          discount: 35,
+          seller: "TravelGear Co",
+          description: `Compact ${searchTerm} perfect for travel. Lightweight and foldable design.`,
+          features: ["Ultra-lightweight", "Foldable design", "Travel case", "Long battery life"],
+          specifications: {
+            "Weight": "150g",
+            "Battery": "25 hours",
+            "Folded Size": "15cm x 12cm",
+            "Warranty": "18 months"
+          }
+        }
+      ];
+      return baseProducts;
+    };
 
+    const productVariations = getProductVariations(query);
     let products = [];
     
-    // Generate multiple products per platform for better comparison
+    // Generate products for each platform with realistic variations
     for (let i = 0; i < productVariations.length; i++) {
       for (let j = 0; j < platforms.length; j++) {
         const variation = productVariations[i];
         const platform = platforms[j];
-        const priceVariation = Math.random() * 0.6 + 0.7; // 70% to 130% of base price
-        const finalPrice = (variation.basePrice * priceVariation).toFixed(2);
-        const ratingVariation = variation.rating + (Math.random() * 0.4 - 0.2); // ±0.2 rating variation
+        
+        // Platform-specific price variations
+        const platformMultiplier = {
+          'Amazon': 1.0,
+          'Flipkart': 0.95,
+          'Meesho': 0.85,
+          'AliExpress': 0.75,
+          'eBay': 0.90
+        }[platform] || 1.0;
+        
+        const finalPrice = (variation.basePrice * platformMultiplier).toFixed(2);
+        const originalPrice = (parseFloat(finalPrice) / (1 - variation.discount / 100)).toFixed(2);
+        const ratingVariation = variation.rating + (Math.random() * 0.3 - 0.15);
 
         products.push({
           id: `${i}-${j}-${Date.now()}`,
           title: variation.title,
           price: finalPrice,
+          originalPrice: originalPrice,
           image: variation.image,
           platform,
-          link: `https://${platform.toLowerCase()}.com`,
+          link: `https://${platform.toLowerCase()}.com/product/${query.toLowerCase().replace(' ', '-')}-${i}`,
           currency,
-          rating: Math.max(3.0, Math.min(5.0, Number(ratingVariation.toFixed(1)))),
-          reviews: variation.reviews + Math.floor(Math.random() * 500),
+          rating: Math.max(3.5, Math.min(5.0, Number(ratingVariation.toFixed(1)))),
+          reviews: variation.reviews + Math.floor(Math.random() * 1000),
           shipping: variation.shipping,
-          availability: variation.availability
+          availability: variation.availability,
+          discount: variation.discount,
+          seller: variation.seller,
+          description: variation.description,
+          features: variation.features,
+          specifications: variation.specifications
         });
       }
     }
@@ -193,36 +260,20 @@ const SearchPage = () => {
       });
     }
 
-    // Limit to 20 products for better performance
-    return products.slice(0, 20);
+    return products.slice(0, 25);
   };
 
   const handleSearch = async (query: string, filters: SearchFilters) => {
-    if (!userProfile) return;
-
-    if (userProfile.search_count_today >= (countryConfig?.daily_search_limit || 10)) {
-      toast({
-        title: "Daily limit reached",
-        description: "You've reached your daily search limit. Try again tomorrow!",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
     setLastQuery(query);
 
     try {
-      const enhancedResults = generateEnhancedMockProducts(query, filters);
+      const enhancedResults = generateRealisticProducts(query, filters);
       setProducts(enhancedResults);
 
+      // Store search history (but no daily limits for now)
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase
-          .from('profiles')
-          .update({ search_count_today: userProfile.search_count_today + 1 })
-          .eq('id', user.id);
-
         const filtersJson = filters ? JSON.parse(JSON.stringify(filters)) : null;
 
         await supabase
@@ -233,13 +284,11 @@ const SearchPage = () => {
             filters: filtersJson,
             results_count: enhancedResults.length
           });
-
-        loadUserProfile();
       }
 
       toast({
         title: "Search completed!",
-        description: `Found ${enhancedResults.length} products across ${countryConfig?.platforms?.length || 5} platforms.`,
+        description: `Found ${enhancedResults.length} products across ${platforms.length} platforms.`,
       });
 
     } catch (error) {
@@ -257,11 +306,13 @@ const SearchPage = () => {
     handleSearch(query, {});
   };
 
+  const platforms = countryConfig?.platforms || ['Amazon', 'Flipkart', 'Meesho', 'AliExpress', 'eBay'];
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       <UserStats 
-        searchCount={userProfile?.search_count_today || 0}
-        searchLimit={countryConfig?.daily_search_limit || 10}
+        searchCount={0}
+        searchLimit={999}
         currency={countryConfig?.currency_symbol || "$"}
         country={userProfile?.country || "US"}
       />
@@ -269,7 +320,7 @@ const SearchPage = () => {
       <SearchForm 
         onSearch={handleSearch} 
         loading={loading}
-        availablePlatforms={countryConfig?.platforms || ['Amazon', 'Flipkart', 'Meesho', 'AliExpress', 'eBay']}
+        availablePlatforms={platforms}
       />
 
       {products.length > 0 ? (
