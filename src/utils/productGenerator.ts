@@ -29,14 +29,14 @@ const countryConfigs: Record<string, CountryConfig> = {
     currency: 'INR',
     symbol: '₹',
     platforms: ['Amazon', 'Flipkart', 'Meesho', 'Myntra', 'Snapdeal'],
-    priceMultiplier: 75.0,
+    priceMultiplier: 83.0, // Updated to more realistic INR conversion
     popularBrands: ['Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Samsung']
   },
   'GB': {
     currency: 'GBP',
     symbol: '£',
     platforms: ['Amazon', 'eBay', 'Argos', 'Currys', 'John Lewis'],
-    priceMultiplier: 0.85,
+    priceMultiplier: 0.79, // Updated to more realistic GBP conversion
     popularBrands: ['Apple', 'Samsung', 'Sony', 'LG', 'Dyson']
   }
 };
@@ -148,7 +148,11 @@ export const generateRealisticProducts = (
   userCountry: string = 'US',
   filters: any = {}
 ): any[] => {
+  console.log('Generating products for country:', userCountry);
+  
   const country = countryConfigs[userCountry] || countryConfigs['US'];
+  console.log('Using country config:', country);
+  
   const searchTerm = query.toLowerCase();
   
   // Find relevant product templates
@@ -172,13 +176,16 @@ export const generateRealisticProducts = (
   const products: any[] = [];
 
   relevantTemplates.forEach(template => {
-    template.brands.forEach(brand => {
+    // Mix global brands with country-specific popular brands
+    const brandsToUse = [...template.brands, ...country.popularBrands].slice(0, 8);
+    
+    brandsToUse.forEach(brand => {
       template.priceRanges.forEach((priceRange, priceIndex) => {
         country.platforms.forEach(platform => {
           // Generate multiple variants per brand/platform/price range
           for (let variant = 0; variant < 2; variant++) {
             const basePrice = Math.random() * (priceRange.max - priceRange.min) + priceRange.min;
-            const finalPrice = (basePrice * country.priceMultiplier).toFixed(2);
+            const convertedPrice = basePrice * country.priceMultiplier;
             
             // Platform-specific price variations
             const platformMultipliers = {
@@ -187,11 +194,18 @@ export const generateRealisticProducts = (
               'eBay': 0.90,
               'Meesho': 0.85,
               'Walmart': 0.92,
-              'Best Buy': 1.05
+              'Best Buy': 1.05,
+              'Myntra': 0.88,
+              'Snapdeal': 0.83,
+              'Argos': 0.96,
+              'Currys': 1.02,
+              'John Lewis': 1.08,
+              'Target': 0.94
             };
             
-            const platformPrice = (parseFloat(finalPrice) * (platformMultipliers[platform as keyof typeof platformMultipliers] || 1.0)).toFixed(2);
-            const originalPrice = (parseFloat(platformPrice) * 1.2).toFixed(2);
+            const platformPrice = (convertedPrice * (platformMultipliers[platform as keyof typeof platformMultipliers] || 1.0));
+            const finalPrice = platformPrice.toFixed(2);
+            const originalPrice = (platformPrice * 1.2).toFixed(2);
             const discount = Math.floor(Math.random() * 30) + 10;
             
             // Generate realistic product details
@@ -230,9 +244,9 @@ export const generateRealisticProducts = (
             ];
             
             products.push({
-              id: `${brand}-${platform}-${priceIndex}-${variant}-${Date.now()}`,
+              id: `${brand}-${platform}-${priceIndex}-${variant}-${Date.now()}-${Math.random()}`,
               title,
-              price: platformPrice,
+              price: finalPrice,
               originalPrice,
               image: `${template.images[imageIndex]}?w=400&h=400&fit=crop`,
               platform,
@@ -257,7 +271,7 @@ export const generateRealisticProducts = (
     });
   });
 
-  // Apply filters
+  // Apply filters (same as before)
   let filteredProducts = products;
 
   if (filters.minPrice || filters.maxPrice) {
@@ -313,6 +327,8 @@ export const generateRealisticProducts = (
     });
   }
 
+  console.log(`Generated ${filteredProducts.length} products with currency ${country.symbol}`);
+  
   // Return a realistic number of products (simulate real marketplace density)
   return filteredProducts.slice(0, Math.min(50, filteredProducts.length));
 };

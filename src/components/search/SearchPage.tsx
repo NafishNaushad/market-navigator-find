@@ -48,14 +48,28 @@ const SearchPage = () => {
   const [countryConfig, setCountryConfig] = useState<any>(null);
   const [lastQuery, setLastQuery] = useState<string>("");
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
+  const [currentCountry, setCurrentCountry] = useState<string>('US');
   const { toast } = useToast();
 
   useEffect(() => {
-    loadUserProfile();
-    detectUserLocation();
+    initializeUserData();
   }, []);
 
-  const loadUserProfile = async () => {
+  const initializeUserData = async () => {
+    // First detect country from browser
+    const detectedCountry = detectUserLocation();
+    setCurrentCountry(detectedCountry);
+    
+    // Set initial country config
+    const initialConfig = getCountryConfig(detectedCountry);
+    setCountryConfig(initialConfig);
+    setAvailableBrands(getAllBrands(detectedCountry));
+
+    // Then load user profile
+    await loadUserProfile(detectedCountry);
+  };
+
+  const loadUserProfile = async (fallbackCountry: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data } = await supabase
@@ -63,7 +77,18 @@ const SearchPage = () => {
         .select('*')
         .eq('id', user.id)
         .single();
-      setUserProfile(data);
+      
+      if (data) {
+        setUserProfile(data);
+        // Use user's saved country preference if available
+        const userCountry = data.country || fallbackCountry;
+        setCurrentCountry(userCountry);
+        
+        // Update country config based on user's country
+        const userCountryConfig = getCountryConfig(userCountry);
+        setCountryConfig(userCountryConfig);
+        setAvailableBrands(getAllBrands(userCountry));
+      }
     }
   };
 
@@ -74,18 +99,37 @@ const SearchPage = () => {
     // Try to get from browser timezone
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      console.log('Detected timezone:', timezone);
+      
       if (timezone.includes('Asia/Kolkata') || timezone.includes('Asia/Calcutta')) {
         detectedCountry = 'IN';
       } else if (timezone.includes('Europe/London')) {
         detectedCountry = 'GB';
+      } else if (timezone.includes('Europe/')) {
+        detectedCountry = 'GB'; // Default European countries to GB for now
+      } else if (timezone.includes('Asia/')) {
+        detectedCountry = 'IN'; // Default Asian countries to IN for now
       }
     } catch (error) {
-      console.log('Could not detect timezone');
+      console.log('Could not detect timezone:', error);
     }
 
-    const config = getCountryConfig(detectedCountry);
-    setCountryConfig(config);
-    setAvailableBrands(getAllBrands(detectedCountry));
+    // Try to get from browser locale
+    try {
+      const locale = navigator.language || navigator.languages[0];
+      console.log('Detected locale:', locale);
+      
+      if (locale.includes('en-IN') || locale.includes('hi')) {
+        detectedCountry = 'IN';
+      } else if (locale.includes('en-GB')) {
+        detectedCountry = 'GB';
+      }
+    } catch (error) {
+      console.log('Could not detect locale:', error);
+    }
+
+    console.log('Final detected country:', detectedCountry);
+    return detectedCountry;
   };
 
   const handleSearch = async (query: string, filters: SearchFilters) => {
@@ -93,10 +137,12 @@ const SearchPage = () => {
     setLastQuery(query);
 
     try {
-      // Generate comprehensive product results
+      console.log('Searching with country:', currentCountry);
+      
+      // Generate comprehensive product results using current country
       const enhancedResults = generateRealisticProducts(
         query, 
-        userProfile?.country || 'US', 
+        currentCountry, 
         filters
       );
       
@@ -110,14 +156,14 @@ const SearchPage = () => {
           .insert({
             user_id: user.id,
             query,
-            filters: filters as any, // Cast to any to satisfy Json type
+            filters: filters as any,
             results_count: enhancedResults.length
           });
       }
 
       toast({
         title: "Search completed!",
-        description: `Found ${enhancedResults.length} products across ${countryConfig?.platforms?.length || 5} platforms.`,
+        description: `Found ${enhancedResults.length} products across ${countryConfig?.platforms?.length || 5} platforms in ${countryConfig?.currency || 'USD'}.`,
       });
 
     } catch (error) {
@@ -144,7 +190,7 @@ const SearchPage = () => {
         searchCount={0}
         searchLimit={999} // Unlimited for testing
         currency={countryConfig?.symbol || "$"}
-        country={userProfile?.country || "US"}
+        country={currentCountry}
       />
       
       <SearchForm 
