@@ -58,10 +58,12 @@ const SearchPage = () => {
   const initializeUserData = async () => {
     // First detect country from browser
     const detectedCountry = detectUserLocation();
+    console.log('Detected country from browser:', detectedCountry);
     setCurrentCountry(detectedCountry);
     
     // Set initial country config
     const initialConfig = getCountryConfig(detectedCountry);
+    console.log('Initial country config:', initialConfig);
     setCountryConfig(initialConfig);
     setAvailableBrands(getAllBrands(detectedCountry));
 
@@ -81,11 +83,26 @@ const SearchPage = () => {
       if (data) {
         setUserProfile(data);
         // Use user's saved country preference if available
-        const userCountry = data.country || fallbackCountry;
+        let userCountry = fallbackCountry;
+        
+        // Map full country names to country codes
+        if (data.country === 'India') {
+          userCountry = 'IN';
+        } else if (data.country === 'United States' || data.country === 'US') {
+          userCountry = 'US';
+        } else if (data.country === 'United Kingdom' || data.country === 'GB') {
+          userCountry = 'GB';
+        } else if (data.country) {
+          // If it's already a country code, use it
+          userCountry = data.country;
+        }
+        
+        console.log('User country from profile:', data.country, '-> mapped to:', userCountry);
         setCurrentCountry(userCountry);
         
         // Update country config based on user's country
         const userCountryConfig = getCountryConfig(userCountry);
+        console.log('User country config:', userCountryConfig);
         setCountryConfig(userCountryConfig);
         setAvailableBrands(getAllBrands(userCountry));
       }
@@ -138,6 +155,7 @@ const SearchPage = () => {
 
     try {
       console.log('Searching with country:', currentCountry);
+      console.log('Using country config:', countryConfig);
       
       // Generate comprehensive product results using current country
       const enhancedResults = generateRealisticProducts(

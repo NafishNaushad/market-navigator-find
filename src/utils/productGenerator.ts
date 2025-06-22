@@ -28,15 +28,15 @@ const countryConfigs: Record<string, CountryConfig> = {
   'IN': {
     currency: 'INR',
     symbol: '₹',
-    platforms: ['Amazon', 'Flipkart', 'Meesho', 'Myntra', 'Snapdeal'],
-    priceMultiplier: 83.0, // Updated to more realistic INR conversion
-    popularBrands: ['Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Samsung']
+    platforms: ['Amazon India', 'Flipkart', 'Meesho', 'Myntra', 'Snapdeal'],
+    priceMultiplier: 83.0,
+    popularBrands: ['Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Samsung', 'Redmi', 'OPPO']
   },
   'GB': {
     currency: 'GBP',
     symbol: '£',
-    platforms: ['Amazon', 'eBay', 'Argos', 'Currys', 'John Lewis'],
-    priceMultiplier: 0.79, // Updated to more realistic GBP conversion
+    platforms: ['Amazon UK', 'eBay UK', 'Argos', 'Currys', 'John Lewis'],
+    priceMultiplier: 0.79,
     popularBrands: ['Apple', 'Samsung', 'Sony', 'LG', 'Dyson']
   }
 };
@@ -150,8 +150,16 @@ export const generateRealisticProducts = (
 ): any[] => {
   console.log('Generating products for country:', userCountry);
   
-  const country = countryConfigs[userCountry] || countryConfigs['US'];
-  console.log('Using country config:', country);
+  // Ensure we get the correct country config
+  const country = countryConfigs[userCountry];
+  if (!country) {
+    console.warn(`Country config not found for ${userCountry}, falling back to US`);
+    const fallbackCountry = countryConfigs['US'];
+    console.log('Using fallback country config:', fallbackCountry);
+  }
+  
+  const finalCountryConfig = country || countryConfigs['US'];
+  console.log('Final country config being used:', finalCountryConfig);
   
   const searchTerm = query.toLowerCase();
   
@@ -176,21 +184,22 @@ export const generateRealisticProducts = (
   const products: any[] = [];
 
   relevantTemplates.forEach(template => {
-    // Mix global brands with country-specific popular brands
-    const brandsToUse = [...template.brands, ...country.popularBrands].slice(0, 8);
+    // Use country-specific popular brands combined with template brands
+    const brandsToUse = [...new Set([...template.brands, ...finalCountryConfig.popularBrands])].slice(0, 8);
     
     brandsToUse.forEach(brand => {
       template.priceRanges.forEach((priceRange, priceIndex) => {
-        country.platforms.forEach(platform => {
+        finalCountryConfig.platforms.forEach(platform => {
           // Generate multiple variants per brand/platform/price range
           for (let variant = 0; variant < 2; variant++) {
             const basePrice = Math.random() * (priceRange.max - priceRange.min) + priceRange.min;
-            const convertedPrice = basePrice * country.priceMultiplier;
+            const convertedPrice = basePrice * finalCountryConfig.priceMultiplier;
             
-            // Platform-specific price variations
-            const platformMultipliers = {
+            // Platform-specific price variations for Indian platforms
+            const platformMultipliers: Record<string, number> = {
               'Amazon': 1.0,
-              'Flipkart': 0.95,
+              'Amazon India': 0.95,
+              'Flipkart': 0.92,
               'eBay': 0.90,
               'Meesho': 0.85,
               'Walmart': 0.92,
@@ -200,12 +209,14 @@ export const generateRealisticProducts = (
               'Argos': 0.96,
               'Currys': 1.02,
               'John Lewis': 1.08,
-              'Target': 0.94
+              'Target': 0.94,
+              'Amazon UK': 0.97,
+              'eBay UK': 0.91
             };
             
-            const platformPrice = (convertedPrice * (platformMultipliers[platform as keyof typeof platformMultipliers] || 1.0));
-            const finalPrice = platformPrice.toFixed(2);
-            const originalPrice = (platformPrice * 1.2).toFixed(2);
+            const platformPrice = convertedPrice * (platformMultipliers[platform] || 1.0);
+            const finalPrice = Math.round(platformPrice).toString();
+            const originalPrice = Math.round(platformPrice * 1.2).toString();
             const discount = Math.floor(Math.random() * 30) + 10;
             
             // Generate realistic product details
@@ -250,8 +261,8 @@ export const generateRealisticProducts = (
               originalPrice,
               image: `${template.images[imageIndex]}?w=400&h=400&fit=crop`,
               platform,
-              link: `https://${platform.toLowerCase().replace(' ', '')}.com/product/${encodeURIComponent(title.toLowerCase().replace(/\s+/g, '-'))}`,
-              currency: country.symbol,
+              link: `https://${platform.toLowerCase().replace(/\s+/g, '')}.com/product/${encodeURIComponent(title.toLowerCase().replace(/\s+/g, '-'))}`,
+              currency: finalCountryConfig.symbol,
               rating: parseFloat(rating.toFixed(1)),
               reviews,
               shipping: shippingOptions[Math.floor(Math.random() * shippingOptions.length)],
@@ -271,7 +282,7 @@ export const generateRealisticProducts = (
     });
   });
 
-  // Apply filters (same as before)
+  // Apply filters
   let filteredProducts = products;
 
   if (filters.minPrice || filters.maxPrice) {
@@ -327,14 +338,19 @@ export const generateRealisticProducts = (
     });
   }
 
-  console.log(`Generated ${filteredProducts.length} products with currency ${country.symbol}`);
+  console.log(`Generated ${filteredProducts.length} products with currency ${finalCountryConfig.symbol} for platforms:`, finalCountryConfig.platforms);
   
-  // Return a realistic number of products (simulate real marketplace density)
+  // Return a realistic number of products
   return filteredProducts.slice(0, Math.min(50, filteredProducts.length));
 };
 
 export const getCountryConfig = (country: string) => {
-  return countryConfigs[country] || countryConfigs['US'];
+  const config = countryConfigs[country];
+  if (!config) {
+    console.warn(`Country config not found for ${country}, returning US config`);
+    return countryConfigs['US'];
+  }
+  return config;
 };
 
 export const getAllBrands = (country: string = 'US') => {
@@ -344,5 +360,10 @@ export const getAllBrands = (country: string = 'US') => {
       template.brands.forEach(brand => allBrands.add(brand));
     });
   });
+  
+  // Add country-specific popular brands
+  const countryConfig = getCountryConfig(country);
+  countryConfig.popularBrands.forEach(brand => allBrands.add(brand));
+  
   return Array.from(allBrands);
 };
