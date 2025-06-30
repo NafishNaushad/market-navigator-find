@@ -33,28 +33,31 @@ const EnhancedSearchResults = ({
   };
 
   const handleShopNow = (product: Product) => {
-    // Open the actual shopping platform with search query
+    // Open the actual shopping platform homepage or search with simpler URLs
     const platformUrls = {
-      'Amazon India': `https://www.amazon.in/s?k=${encodeURIComponent(searchQuery)}`,
-      'Flipkart': `https://www.flipkart.com/search?q=${encodeURIComponent(searchQuery)}`,
-      'Meesho': `https://www.meesho.com/search?q=${encodeURIComponent(searchQuery)}`,
-      'Myntra': `https://www.myntra.com/${encodeURIComponent(searchQuery)}`,
-      'Snapdeal': `https://www.snapdeal.com/search?keyword=${encodeURIComponent(searchQuery)}`,
-      'Amazon': `https://www.amazon.com/s?k=${encodeURIComponent(searchQuery)}`,
-      'eBay': `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(searchQuery)}`,
-      'Walmart': `https://www.walmart.com/search?q=${encodeURIComponent(searchQuery)}`,
-      'Best Buy': `https://www.bestbuy.com/site/searchpage.jsp?st=${encodeURIComponent(searchQuery)}`,
-      'Target': `https://www.target.com/s?searchTerm=${encodeURIComponent(searchQuery)}`,
-      'Amazon UK': `https://www.amazon.co.uk/s?k=${encodeURIComponent(searchQuery)}`,
-      'eBay UK': `https://www.ebay.co.uk/sch/i.html?_nkw=${encodeURIComponent(searchQuery)}`,
-      'Argos': `https://www.argos.co.uk/search/${encodeURIComponent(searchQuery)}`,
-      'Currys': `https://www.currys.co.uk/search?q=${encodeURIComponent(searchQuery)}`,
-      'John Lewis': `https://www.johnlewis.com/search?search-term=${encodeURIComponent(searchQuery)}`
+      'Amazon India': 'https://www.amazon.in',
+      'Flipkart': 'https://www.flipkart.com',
+      'Meesho': 'https://www.meesho.com',
+      'Myntra': 'https://www.myntra.com',
+      'Snapdeal': 'https://www.snapdeal.com',
+      'Amazon': 'https://www.amazon.com',
+      'eBay': 'https://www.ebay.com',
+      'Walmart': 'https://www.walmart.com',
+      'Best Buy': 'https://www.bestbuy.com',
+      'Target': 'https://www.target.com',
+      'Amazon UK': 'https://www.amazon.co.uk',
+      'eBay UK': 'https://www.ebay.co.uk',
+      'Argos': 'https://www.argos.co.uk',
+      'Currys': 'https://www.currys.co.uk',
+      'John Lewis': 'https://www.johnlewis.com'
     };
 
     const url = platformUrls[product.platform as keyof typeof platformUrls];
     if (url) {
       window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      // Fallback to Google search if platform not found
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -332,7 +335,7 @@ const EnhancedSearchResults = ({
                   size="sm"
                 >
                   <ExternalLink className="h-3 w-3 mr-1" />
-                  Shop on {product.platform}
+                  Visit {product.platform}
                 </Button>
               </CardContent>
             </Card>
