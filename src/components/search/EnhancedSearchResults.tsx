@@ -32,6 +32,32 @@ const EnhancedSearchResults = ({
     setIsModalOpen(true);
   };
 
+  const handleShopNow = (product: Product) => {
+    // Open the actual shopping platform with search query
+    const platformUrls = {
+      'Amazon India': `https://www.amazon.in/s?k=${encodeURIComponent(searchQuery)}`,
+      'Flipkart': `https://www.flipkart.com/search?q=${encodeURIComponent(searchQuery)}`,
+      'Meesho': `https://www.meesho.com/search?q=${encodeURIComponent(searchQuery)}`,
+      'Myntra': `https://www.myntra.com/${encodeURIComponent(searchQuery)}`,
+      'Snapdeal': `https://www.snapdeal.com/search?keyword=${encodeURIComponent(searchQuery)}`,
+      'Amazon': `https://www.amazon.com/s?k=${encodeURIComponent(searchQuery)}`,
+      'eBay': `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(searchQuery)}`,
+      'Walmart': `https://www.walmart.com/search?q=${encodeURIComponent(searchQuery)}`,
+      'Best Buy': `https://www.bestbuy.com/site/searchpage.jsp?st=${encodeURIComponent(searchQuery)}`,
+      'Target': `https://www.target.com/s?searchTerm=${encodeURIComponent(searchQuery)}`,
+      'Amazon UK': `https://www.amazon.co.uk/s?k=${encodeURIComponent(searchQuery)}`,
+      'eBay UK': `https://www.ebay.co.uk/sch/i.html?_nkw=${encodeURIComponent(searchQuery)}`,
+      'Argos': `https://www.argos.co.uk/search/${encodeURIComponent(searchQuery)}`,
+      'Currys': `https://www.currys.co.uk/search?q=${encodeURIComponent(searchQuery)}`,
+      'John Lewis': `https://www.johnlewis.com/search?search-term=${encodeURIComponent(searchQuery)}`
+    };
+
+    const url = platformUrls[product.platform as keyof typeof platformUrls];
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   const toggleCompare = (productId: string) => {
     setCompareList(prev => 
       prev.includes(productId) 
@@ -51,12 +77,21 @@ const EnhancedSearchResults = ({
   const getPlatformColor = (platform: string) => {
     const colors = {
       'Amazon': 'bg-gradient-to-r from-orange-400 to-orange-600 text-white',
+      'Amazon India': 'bg-gradient-to-r from-orange-400 to-orange-600 text-white',
+      'Amazon UK': 'bg-gradient-to-r from-orange-400 to-orange-600 text-white',
       'Flipkart': 'bg-gradient-to-r from-blue-500 to-blue-700 text-white',
       'Meesho': 'bg-gradient-to-r from-pink-500 to-pink-700 text-white',
+      'Myntra': 'bg-gradient-to-r from-purple-500 to-purple-700 text-white',
+      'Snapdeal': 'bg-gradient-to-r from-red-500 to-red-700 text-white',
       'AliExpress': 'bg-gradient-to-r from-red-500 to-red-700 text-white',
       'eBay': 'bg-gradient-to-r from-yellow-500 to-yellow-700 text-white',
+      'eBay UK': 'bg-gradient-to-r from-yellow-500 to-yellow-700 text-white',
       'Walmart': 'bg-gradient-to-r from-blue-400 to-blue-600 text-white',
       'Best Buy': 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white',
+      'Target': 'bg-gradient-to-r from-red-400 to-red-600 text-white',
+      'Argos': 'bg-gradient-to-r from-red-400 to-red-600 text-white',
+      'Currys': 'bg-gradient-to-r from-blue-500 to-blue-700 text-white',
+      'John Lewis': 'bg-gradient-to-r from-green-500 to-green-700 text-white',
     };
     return colors[platform as keyof typeof colors] || 'bg-gradient-to-r from-gray-500 to-gray-700 text-white';
   };
@@ -181,11 +216,13 @@ const EnhancedSearchResults = ({
           {filteredProducts.map((product) => (
             <Card 
               key={product.id} 
-              className="group overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white border border-gray-200 cursor-pointer"
-              onClick={() => handleProductClick(product)}
+              className="group overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white border border-gray-200"
             >
               <div className="relative">
-                <div className="aspect-square bg-gray-50 overflow-hidden">
+                <div 
+                  className="aspect-square bg-gray-50 overflow-hidden cursor-pointer"
+                  onClick={() => handleProductClick(product)}
+                >
                   <img
                     src={product.image}
                     alt={product.title}
@@ -287,6 +324,16 @@ const EnhancedSearchResults = ({
                   
                   <p className="text-xs text-gray-500">by {product.seller}</p>
                 </div>
+
+                {/* Shop Now Button */}
+                <Button 
+                  onClick={() => handleShopNow(product)}
+                  className={`w-full text-xs ${getPlatformColor(product.platform)} hover:opacity-90 transition-opacity`}
+                  size="sm"
+                >
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  Shop on {product.platform}
+                </Button>
               </CardContent>
             </Card>
           ))}
