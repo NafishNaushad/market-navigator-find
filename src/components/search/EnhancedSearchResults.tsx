@@ -33,23 +33,26 @@ const EnhancedSearchResults = ({
   };
 
   const handleShopNow = (product: Product) => {
-    // Open the actual shopping platform homepage or search with simpler URLs
+    // Create search URLs with the product title for better search results
+    const searchTerm = product.title || searchQuery;
+    const encodedSearch = encodeURIComponent(searchTerm);
+    
     const platformUrls = {
-      'Amazon India': 'https://www.amazon.in',
-      'Flipkart': 'https://www.flipkart.com',
-      'Meesho': 'https://www.meesho.com',
-      'Myntra': 'https://www.myntra.com',
-      'Snapdeal': 'https://www.snapdeal.com',
-      'Amazon': 'https://www.amazon.com',
-      'eBay': 'https://www.ebay.com',
-      'Walmart': 'https://www.walmart.com',
-      'Best Buy': 'https://www.bestbuy.com',
-      'Target': 'https://www.target.com',
-      'Amazon UK': 'https://www.amazon.co.uk',
-      'eBay UK': 'https://www.ebay.co.uk',
-      'Argos': 'https://www.argos.co.uk',
-      'Currys': 'https://www.currys.co.uk',
-      'John Lewis': 'https://www.johnlewis.com'
+      'Amazon India': `https://www.amazon.in/s?k=${encodedSearch}`,
+      'Flipkart': `https://www.flipkart.com/search?q=${encodedSearch}`,
+      'Meesho': `https://www.meesho.com/search?q=${encodedSearch}`,
+      'Myntra': `https://www.myntra.com/search?q=${encodedSearch}`,
+      'Snapdeal': `https://www.snapdeal.com/search?keyword=${encodedSearch}`,
+      'Amazon': `https://www.amazon.com/s?k=${encodedSearch}`,
+      'eBay': `https://www.ebay.com/sch/i.html?_nkw=${encodedSearch}`,
+      'Walmart': `https://www.walmart.com/search?q=${encodedSearch}`,
+      'Best Buy': `https://www.bestbuy.com/site/searchpage.jsp?st=${encodedSearch}`,
+      'Target': `https://www.target.com/s?searchTerm=${encodedSearch}`,
+      'Amazon UK': `https://www.amazon.co.uk/s?k=${encodedSearch}`,
+      'eBay UK': `https://www.ebay.co.uk/sch/i.html?_nkw=${encodedSearch}`,
+      'Argos': `https://www.argos.co.uk/search/${encodedSearch}`,
+      'Currys': `https://www.currys.co.uk/search?q=${encodedSearch}`,
+      'John Lewis': `https://www.johnlewis.com/search?search-term=${encodedSearch}`
     };
 
     const url = platformUrls[product.platform as keyof typeof platformUrls];
@@ -57,7 +60,7 @@ const EnhancedSearchResults = ({
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       // Fallback to Google search if platform not found
-      window.open(`https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`, '_blank', 'noopener,noreferrer');
+      window.open(`https://www.google.com/search?q=${encodedSearch}`, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -335,7 +338,7 @@ const EnhancedSearchResults = ({
                   size="sm"
                 >
                   <ExternalLink className="h-3 w-3 mr-1" />
-                  Visit {product.platform}
+                  Shop on {product.platform}
                 </Button>
               </CardContent>
             </Card>
