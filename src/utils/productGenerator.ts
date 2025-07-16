@@ -87,6 +87,50 @@ const generateBetterProductImage = (productName: string, category: string): stri
   return defaultImages[Math.floor(Math.random() * defaultImages.length)];
 };
 
+// Country configuration data
+const countryConfigs = {
+  'IN': {
+    currency: 'INR',
+    symbol: '₹',
+    platforms: ['Amazon India', 'Flipkart', 'Meesho', 'Myntra', 'Snapdeal'],
+    priceMultiplier: 83,
+    popularBrands: ['Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Samsung', 'Redmi', 'OPPO']
+  },
+  'US': {
+    currency: 'USD',
+    symbol: '$',
+    platforms: ['Amazon', 'eBay', 'Walmart', 'Best Buy', 'Target'],
+    priceMultiplier: 1,
+    popularBrands: ['Apple', 'Samsung', 'Sony', 'Nike', 'Adidas', 'Dell', 'HP']
+  },
+  'GB': {
+    currency: 'GBP',
+    symbol: '£',
+    platforms: ['Amazon UK', 'eBay UK', 'Argos', 'Currys', 'John Lewis'],
+    priceMultiplier: 0.8,
+    popularBrands: ['Apple', 'Samsung', 'Sony', 'Nike', 'Adidas', 'Dell', 'HP']
+  }
+};
+
+export const getCountryConfig = (countryCode: string) => {
+  return countryConfigs[countryCode as keyof typeof countryConfigs] || countryConfigs['US'];
+};
+
+export const getAllBrands = (countryCode: string) => {
+  const config = getCountryConfig(countryCode);
+  return config.popularBrands;
+};
+
+export const generateRealisticProducts = (searchQuery: string, countryCode: string, filters: any, count: number = 20): Product[] => {
+  const config = getCountryConfig(countryCode);
+  return generateProducts(searchQuery, count).map(product => ({
+    ...product,
+    currency: config.symbol,
+    platform: config.platforms[Math.floor(Math.random() * config.platforms.length)],
+    price: Math.floor(parseInt(product.price) * config.priceMultiplier).toString()
+  }));
+};
+
 export const generateProducts = (searchQuery: string, count: number = 20): Product[] => {
   const platforms = [
     'Amazon India', 'Flipkart', 'Meesho', 'Myntra', 'Snapdeal',
