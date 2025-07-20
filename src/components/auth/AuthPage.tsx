@@ -132,44 +132,6 @@ const AuthPage = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
-      });
-
-      if (error) {
-        console.log("Google sign in error:", error);
-        if (error.message.includes("provider is not enabled")) {
-          toast({
-            title: "Google sign-in not available",
-            description: "Google authentication is not configured. Please use email and password to sign in.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Error signing in with Google",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
-      }
-    } catch (error) {
-      console.log("Unexpected error:", error);
-      toast({
-        title: "An unexpected error occurred",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
@@ -265,24 +227,6 @@ const AuthPage = () => {
               </TabsContent>
             </Tabs>
 
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-              className="w-full"
-            >
-              <Mail className="mr-2 h-4 w-4" />
-              Google
-            </Button>
 
             <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
               <p>Get 10 free searches per day</p>
