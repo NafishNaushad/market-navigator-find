@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Star, ExternalLink, Truck, Shield, Heart } from "lucide-react";
-import { Product } from "./SearchPage";
+import { Product } from "@/types/product";
 
 interface ProductDetailModalProps {
   product: Product | null;

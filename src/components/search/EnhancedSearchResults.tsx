@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, ShoppingCart, Star, Truck, Clock, GitCompare, Heart, TrendingUp } from "lucide-react";
-import { Product } from "./SearchPage";
+import { Product } from "@/types/product";
 import { useState } from "react";
 import ProductDetailModal from "./ProductDetailModal";
 import AdvancedFilters from "./AdvancedFilters";

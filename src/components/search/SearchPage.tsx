@@ -7,39 +7,7 @@ import UserStats from "./UserStats";
 import { generateRealisticProducts, getCountryConfig, getAllBrands } from "@/utils/productGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-export interface Product {
-  id: string;
-  title: string;
-  price: string;
-  image: string;
-  platform: string;
-  link: string;
-  currency: string;
-  rating?: number;
-  reviews?: number;
-  shipping?: string;
-  availability?: string;
-  originalPrice?: string;
-  discount?: number;
-  seller?: string;
-  description?: string;
-  features?: string[];
-  specifications?: Record<string, string>;
-  category?: string;
-  brand?: string;
-  deliveryTime?: number;
-}
-
-export interface SearchFilters {
-  minPrice?: number;
-  maxPrice?: number;
-  platforms?: string[];
-  brands?: string[];
-  sortBy?: 'price-low' | 'price-high' | 'rating' | 'popularity' | 'delivery' | 'relevance';
-  freeShipping?: boolean;
-  minRating?: number;
-}
+import { Product, SearchFilters } from "@/types/product";
 
 const SearchPage = () => {
   const [products, setProducts] = useState<Product[]>([]);

@@ -1,5 +1,5 @@
 
-import { Product } from "../components/search/SearchPage";
+import { Product } from "../types/product";
 
 const generateBetterProductImage = (productName: string, category: string): string => {
   // Create more specific and high-quality product images based on the search query
@@ -186,15 +186,11 @@ export const generateProducts = (searchQuery: string, count: number = 20): Produ
       currency: platform.includes('India') ? '₹' : platform.includes('UK') ? '£' : '$',
       image: generateBetterProductImage(searchQuery, 'electronics'),
       platform,
-      brand,
       seller,
       rating: Math.floor(Math.random() * 20 + 30) / 10, // 3.0 to 5.0
       reviews: Math.floor(Math.random() * 10000 + 100),
-      shipping: Math.random() > 0.3 ? 'Free Shipping' : `₹${Math.floor(Math.random() * 200 + 50)} Shipping`,
-      availability: Math.random() > 0.8 ? 'Limited stock' : 'In stock',
-      discount,
-      deliveryTime: Math.floor(Math.random() * 7 + 1),
-      description: `High-quality ${searchQuery} from ${brand}. Perfect for your needs with excellent features and reliable performance.`,
+      discount: discount,
+      freeShipping: Math.random() > 0.7,
       features: [
         'Premium build quality',
         'Latest technology',

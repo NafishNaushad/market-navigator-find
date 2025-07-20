@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { SearchFilters as SearchFiltersType } from "./SearchPage";
+import { SearchFilters as SearchFiltersType } from "@/types/product";
 import SearchInput from "./SearchInput";
 import AdvancedFilters from "./AdvancedFilters";
 
